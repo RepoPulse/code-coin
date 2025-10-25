@@ -15,16 +15,17 @@ const Index = () => {
   const { data: session, status } = useSession();
 
   console.log("Session:", session, status);
-  // Access token:
+
   useEffect(() => {
     if (status === "authenticated") {
       console.log("GitHub Access Token:", session?.accessToken);
+      console.log("User ID:", session.user.id);
+      const installUrl =
+        "https://github.com/apps/reviewprfortesting/installations/new";
+      window.location.href = installUrl;
     }
-    console.log(status);
-  }, [status]);
-  useEffect(() => {
-    console.log(session);
-  }, [status]);
+  }, [status, session]);
+
   if (session?.accessToken) {
     console.log("GitHub Access Token:", session.accessToken);
   }
