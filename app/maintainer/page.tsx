@@ -1,19 +1,23 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Settings, Plus, Users, Wallet, LogOut } from "lucide-react"
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Settings, Plus, Users, Wallet, LogOut } from "lucide-react";
 
 export default function MaintainerDashboard() {
-  const [showAddRepoModal, setShowAddRepoModal] = useState(false)
-  const [showWalletModal, setShowWalletModal] = useState(false)
-  const [showWithdrawModal, setShowWithdrawModal] = useState(false)
-  const [withdrawAmount, setWithdrawAmount] = useState("")
-  const [walletConnected, setWalletConnected] = useState(false)
-  const [walletAddress, setWalletAddress] = useState("")
-  const [newRepo, setNewRepo] = useState({ name: "", description: "", language: "" })
+  const [showAddRepoModal, setShowAddRepoModal] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [walletConnected, setWalletConnected] = useState(false);
+  const [walletAddress, setWalletAddress] = useState("");
+  const [newRepo, setNewRepo] = useState({
+    name: "",
+    description: "",
+    language: "",
+  });
   const [repos, setRepos] = useState([
     {
       id: 1,
@@ -36,7 +40,7 @@ export default function MaintainerDashboard() {
       contributors: 12,
       totalPaid: 2100,
     },
-  ])
+  ]);
 
   const maintainerData = {
     name: "Sarah Maintainer",
@@ -44,7 +48,7 @@ export default function MaintainerDashboard() {
     availableBalance: 5000,
     activeBounties: 15,
     totalDistributed: 4200,
-  }
+  };
 
   const recentPayments = [
     {
@@ -65,30 +69,37 @@ export default function MaintainerDashboard() {
       amount: 500,
       date: "2025-10-18",
     },
-  ]
+  ];
 
   const handleConnectWallet = async () => {
     try {
-      // Simulate wallet connection - in production, integrate with actual Stellar wallet SDK
-      const mockWalletAddress =
-        "G" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-      setWalletConnected(true)
-      setWalletAddress(mockWalletAddress)
-      console.log("[v0] Connected wallet:", mockWalletAddress)
-      setShowWalletModal(false)
-    } catch (err) {
-      console.error("[v0] Wallet connection failed:", err)
-      alert("Failed to connect wallet. Please try again.")
+      const albedo = (await import("@albedo-link/intent")).default;
+
+      const result = await albedo.publicKey({
+        token: "CodeCoin Wallet Connection",
+      });
+
+      if (result && result.pubkey) {
+        setWalletConnected(true);
+        setWalletAddress(result.pubkey);
+        setShowWalletModal(false);
+        console.log("Connected Stellar Address:", result.pubkey);
+      } else {
+        alert("Wallet connection failed or cancelled.");
+      }
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
+      alert("Something went wrong while connecting to Albedo.");
     }
-  }
+  };
 
   const handleWithdraw = () => {
     if (withdrawAmount && Number.parseFloat(withdrawAmount) > 0) {
-      console.log(`Withdrawing ${withdrawAmount} USDC from ${walletAddress}`)
-      setWithdrawAmount("")
-      setShowWithdrawModal(false)
+      console.log(`Withdrawing ${withdrawAmount} USDC from ${walletAddress}`);
+      setWithdrawAmount("");
+      setShowWithdrawModal(false);
     }
-  }
+  };
 
   return (
     <main className="min-h-screen bg-black text-foreground">
@@ -135,7 +146,9 @@ export default function MaintainerDashboard() {
             <CardContent className="space-y-4">
               {!walletConnected ? (
                 <>
-                  <p className="text-gray-400 text-sm">Connect your Stellar wallet to receive payments</p>
+                  <p className="text-gray-400 text-sm">
+                    Connect your Stellar wallet to receive payments
+                  </p>
                   <Button
                     onClick={handleConnectWallet}
                     className="w-full bg-gradient-to-r from-red-700 to-red-800 hover:from-red-600 hover:to-red-700 text-white font-bold"
@@ -146,13 +159,17 @@ export default function MaintainerDashboard() {
               ) : (
                 <>
                   <div className="p-3 bg-red-900/10 rounded-lg border border-red-900/30">
-                    <p className="text-gray-400 text-xs mb-1">Connected Wallet</p>
-                    <p className="text-white font-mono text-sm">{walletAddress}</p>
+                    <p className="text-gray-400 text-xs mb-1">
+                      Connected Wallet
+                    </p>
+                    <p className="text-white font-mono text-sm">
+                      {walletAddress}
+                    </p>
                   </div>
                   <Button
                     onClick={() => {
-                      setShowWithdrawModal(true)
-                      setShowWalletModal(false)
+                      setShowWithdrawModal(true);
+                      setShowWalletModal(false);
                     }}
                     className="w-full bg-gradient-to-r from-green-700 to-green-800 hover:from-green-600 hover:to-green-700 text-white font-bold"
                   >
@@ -160,8 +177,8 @@ export default function MaintainerDashboard() {
                   </Button>
                   <Button
                     onClick={() => {
-                      setWalletConnected(false)
-                      setShowWalletModal(false)
+                      setWalletConnected(false);
+                      setShowWalletModal(false);
                     }}
                     variant="outline"
                     className="w-full text-red-400 border-red-900/30 hover:bg-red-900/10"
@@ -194,7 +211,9 @@ export default function MaintainerDashboard() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Amount (USDC)</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Amount (USDC)
+                </label>
                 <input
                   type="number"
                   value={withdrawAmount}
@@ -229,12 +248,16 @@ export default function MaintainerDashboard() {
           <Card className="glass-effect-strong border-red-900/20 hover:border-red-900/40 transition-all depth-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-gray-400 text-sm font-medium">Wallet</CardTitle>
+                <CardTitle className="text-gray-400 text-sm font-medium">
+                  Wallet
+                </CardTitle>
                 <span className="text-lg">💰</span>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-4xl font-black text-green-500 mb-1">$5000</div>
+              <div className="text-4xl font-black text-green-500 mb-1">
+                $5000
+              </div>
               <p className="text-gray-500 text-xs">Available Balance</p>
             </CardContent>
           </Card>
@@ -243,7 +266,9 @@ export default function MaintainerDashboard() {
           <Card className="glass-effect-strong border-red-900/20 hover:border-red-900/40 transition-all depth-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-gray-400 text-sm font-medium">Active</CardTitle>
+                <CardTitle className="text-gray-400 text-sm font-medium">
+                  Active
+                </CardTitle>
                 <div className="w-2 h-2 rounded-full bg-blue-500"></div>
               </div>
             </CardHeader>
@@ -257,12 +282,16 @@ export default function MaintainerDashboard() {
           <Card className="glass-effect-strong border-red-900/20 hover:border-red-900/40 transition-all depth-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-gray-400 text-sm font-medium">Total</CardTitle>
+                <CardTitle className="text-gray-400 text-sm font-medium">
+                  Total
+                </CardTitle>
                 <Users className="w-4 h-4 text-yellow-500" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-4xl font-black text-yellow-500 mb-1">$4200</div>
+              <div className="text-4xl font-black text-yellow-500 mb-1">
+                $4200
+              </div>
               <p className="text-gray-500 text-xs">Total Distributed</p>
             </CardContent>
           </Card>
@@ -275,7 +304,9 @@ export default function MaintainerDashboard() {
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2">
               <span className="text-2xl">📚</span>
-              <h2 className="text-2xl font-black text-white">Your Repositories</h2>
+              <h2 className="text-2xl font-black text-white">
+                Your Repositories
+              </h2>
             </div>
             <Button
               onClick={() => setShowAddRepoModal(!showAddRepoModal)}
@@ -294,31 +325,43 @@ export default function MaintainerDashboard() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Repository Name</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Repository Name
+                  </label>
                   <input
                     type="text"
                     value={newRepo.name}
-                    onChange={(e) => setNewRepo({ ...newRepo, name: e.target.value })}
+                    onChange={(e) =>
+                      setNewRepo({ ...newRepo, name: e.target.value })
+                    }
                     placeholder="e.g., my-awesome-project"
                     className="w-full px-4 py-2 bg-black border border-red-900/30 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-red-700"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Description</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Description
+                  </label>
                   <textarea
                     value={newRepo.description}
-                    onChange={(e) => setNewRepo({ ...newRepo, description: e.target.value })}
+                    onChange={(e) =>
+                      setNewRepo({ ...newRepo, description: e.target.value })
+                    }
                     placeholder="Describe your repository..."
                     className="w-full px-4 py-2 bg-black border border-red-900/30 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-red-700 resize-none"
                     rows={3}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">Language</label>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">
+                    Language
+                  </label>
                   <input
                     type="text"
                     value={newRepo.language}
-                    onChange={(e) => setNewRepo({ ...newRepo, language: e.target.value })}
+                    onChange={(e) =>
+                      setNewRepo({ ...newRepo, language: e.target.value })
+                    }
                     placeholder="e.g., TypeScript, Python, Go"
                     className="w-full px-4 py-2 bg-black border border-red-900/30 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-red-700"
                   />
@@ -332,17 +375,21 @@ export default function MaintainerDashboard() {
                   </Button>
                   <Button
                     onClick={() => {
-                      if (newRepo.name && newRepo.description && newRepo.language) {
+                      if (
+                        newRepo.name &&
+                        newRepo.description &&
+                        newRepo.language
+                      ) {
                         const repo = {
                           id: repos.length + 1,
                           name: newRepo.name,
                           activeBounties: 0,
                           contributors: 0,
                           totalPaid: 0,
-                        }
-                        setRepos([...repos, repo])
-                        setNewRepo({ name: "", description: "", language: "" })
-                        setShowAddRepoModal(false)
+                        };
+                        setRepos([...repos, repo]);
+                        setNewRepo({ name: "", description: "", language: "" });
+                        setShowAddRepoModal(false);
                       }
                     }}
                     className="px-4 py-2 rounded-lg bg-gradient-to-r from-red-700 to-red-800 hover:from-red-600 hover:to-red-700 text-white font-bold"
@@ -363,24 +410,35 @@ export default function MaintainerDashboard() {
               >
                 <CardHeader className="pb-4">
                   <div className="flex items-start justify-between">
-                    <CardTitle className="text-white text-lg">{repo.name}</CardTitle>
+                    <CardTitle className="text-white text-lg">
+                      {repo.name}
+                    </CardTitle>
                     <Settings className="w-4 h-4 text-gray-500 cursor-pointer hover:text-gray-300" />
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-400 text-sm">Active Bounties</span>
-                    <Badge variant="secondary" className="glass-effect text-yellow-500 border-yellow-900/30 font-bold">
+                    <span className="text-gray-400 text-sm">
+                      Active Bounties
+                    </span>
+                    <Badge
+                      variant="secondary"
+                      className="glass-effect text-yellow-500 border-yellow-900/30 font-bold"
+                    >
                       {repo.activeBounties}
                     </Badge>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-gray-400 text-sm">Contributors</span>
-                    <span className="text-white font-bold">{repo.contributors}</span>
+                    <span className="text-white font-bold">
+                      {repo.contributors}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between pt-2 border-t border-red-900/20">
                     <span className="text-gray-400 text-sm">Total Paid</span>
-                    <span className="text-green-500 font-bold">${repo.totalPaid.toLocaleString()} USDC</span>
+                    <span className="text-green-500 font-bold">
+                      ${repo.totalPaid.toLocaleString()} USDC
+                    </span>
                   </div>
                 </CardContent>
               </Card>
@@ -392,7 +450,9 @@ export default function MaintainerDashboard() {
         <div>
           <div className="flex items-center gap-2 mb-6">
             <span className="text-2xl">💸</span>
-            <h2 className="text-2xl font-black text-white">Recent Bounty Payments</h2>
+            <h2 className="text-2xl font-black text-white">
+              Recent Bounty Payments
+            </h2>
           </div>
 
           <div className="space-y-4">
@@ -405,7 +465,9 @@ export default function MaintainerDashboard() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <span className="text-sm font-mono text-gray-400">{payment.repo}</span>
+                        <span className="text-sm font-mono text-gray-400">
+                          {payment.repo}
+                        </span>
                         <Badge
                           variant="secondary"
                           className="glass-effect text-purple-400 border-purple-500/30 text-xs"
@@ -413,12 +475,18 @@ export default function MaintainerDashboard() {
                           {payment.aiScore}
                         </Badge>
                       </div>
-                      <h3 className="text-lg font-bold text-white mb-2">{payment.title}</h3>
-                      <p className="text-gray-400 text-sm">Completed by {payment.contributor}</p>
+                      <h3 className="text-lg font-bold text-white mb-2">
+                        {payment.title}
+                      </h3>
+                      <p className="text-gray-400 text-sm">
+                        Completed by {payment.contributor}
+                      </p>
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       <div className="text-right">
-                        <div className="text-2xl font-black text-green-400">${payment.amount}</div>
+                        <div className="text-2xl font-black text-green-400">
+                          ${payment.amount}
+                        </div>
                         <p className="text-gray-500 text-xs">{payment.date}</p>
                       </div>
                     </div>
@@ -430,5 +498,5 @@ export default function MaintainerDashboard() {
         </div>
       </section>
     </main>
-  )
+  );
 }

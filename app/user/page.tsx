@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Search, TrendingUp, Wallet, LogOut } from "lucide-react"
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Search, TrendingUp, Wallet, LogOut } from "lucide-react";
 
 export default function UserDashboard() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [filterDifficulty, setFilterDifficulty] = useState("all")
-  const [sortBy, setSortBy] = useState("bounty-high")
-  const [showWalletModal, setShowWalletModal] = useState(false)
-  const [showWithdrawModal, setShowWithdrawModal] = useState(false)
-  const [withdrawAmount, setWithdrawAmount] = useState("")
-  const [walletConnected, setWalletConnected] = useState(false)
-  const [walletAddress, setWalletAddress] = useState("")
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterDifficulty, setFilterDifficulty] = useState("all");
+  const [sortBy, setSortBy] = useState("bounty-high");
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [walletConnected, setWalletConnected] = useState(false);
+  const [walletAddress, setWalletAddress] = useState("");
 
   // Mock user data
   const userData = {
@@ -24,7 +24,7 @@ export default function UserDashboard() {
     completedBounties: 23,
     avgAIScore: 92,
     topPercentile: "Top 10%",
-  }
+  };
 
   // Mock bounties data
   const allBounties = [
@@ -33,7 +33,8 @@ export default function UserDashboard() {
       repo: "react/react",
       difficulty: "medium",
       title: "Fix memory leak in useEffect cleanup",
-      description: "Memory leak occurring in component unmount with async operations",
+      description:
+        "Memory leak occurring in component unmount with async operations",
       amount: 250,
       aiScore: "AI 85",
       tags: ["React", "Bug Fix"],
@@ -43,7 +44,8 @@ export default function UserDashboard() {
       repo: "vercel/next.js",
       difficulty: "hard",
       title: "Optimize image loading performance",
-      description: "Improve image component lazy loading and reduce bundle size",
+      description:
+        "Improve image component lazy loading and reduce bundle size",
       amount: 500,
       aiScore: "AI 92",
       tags: ["Performance", "Feature"],
@@ -58,36 +60,61 @@ export default function UserDashboard() {
       aiScore: "AI 78",
       tags: ["UI", "Feature"],
     },
-  ]
+  ];
 
   // Filter and sort bounties
   const filteredBounties = allBounties
-    .filter((b) => filterDifficulty === "all" || b.difficulty === filterDifficulty)
+    .filter(
+      (b) => filterDifficulty === "all" || b.difficulty === filterDifficulty,
+    )
     .filter(
       (b) =>
         b.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         b.repo.toLowerCase().includes(searchQuery.toLowerCase()),
     )
     .sort((a, b) => {
-      if (sortBy === "bounty-high") return b.amount - a.amount
-      if (sortBy === "bounty-low") return a.amount - b.amount
-      if (sortBy === "ai-score") return Number.parseInt(b.aiScore) - Number.parseInt(a.aiScore)
-      return 0
-    })
+      if (sortBy === "bounty-high") return b.amount - a.amount;
+      if (sortBy === "bounty-low") return a.amount - b.amount;
+      if (sortBy === "ai-score")
+        return Number.parseInt(b.aiScore) - Number.parseInt(a.aiScore);
+      return 0;
+    });
 
-  const handleConnectWallet = () => {
-    setWalletConnected(true)
-    setWalletAddress("0x742d...8f2a")
-    setShowWalletModal(false)
-  }
+  // const handleConnectWallet = () => {
+  //   setWalletConnected(true)
+  //   setWalletAddress("0x742d...8f2a")
+  //   setShowWalletModal(false)
+  // }
+
+  const handleConnectWallet = async () => {
+    try {
+      const albedo = (await import("@albedo-link/intent")).default;
+
+      const result = await albedo.publicKey({
+        token: "CodeCoin Wallet Connection",
+      });
+
+      if (result && result.pubkey) {
+        setWalletConnected(true);
+        setWalletAddress(result.pubkey);
+        setShowWalletModal(false);
+        console.log("Connected Stellar Address:", result.pubkey);
+      } else {
+        alert("Wallet connection failed or cancelled.");
+      }
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
+      alert("Something went wrong while connecting to Albedo.");
+    }
+  };
 
   const handleWithdraw = () => {
     if (withdrawAmount && Number.parseFloat(withdrawAmount) > 0) {
-      console.log(`Withdrawing ${withdrawAmount} USDC`)
-      setWithdrawAmount("")
-      setShowWithdrawModal(false)
+      console.log(`Withdrawing ${withdrawAmount} USDC`);
+      setWithdrawAmount("");
+      setShowWithdrawModal(false);
     }
-  }
+  };
 
   return (
     <main className="min-h-screen bg-black text-foreground">
@@ -134,7 +161,9 @@ export default function UserDashboard() {
             <CardContent className="space-y-4">
               {!walletConnected ? (
                 <>
-                  <p className="text-gray-400 text-sm">Connect your Stellar wallet to receive payments</p>
+                  <p className="text-gray-400 text-sm">
+                    Connect your Stellar wallet to receive payments
+                  </p>
                   <Button
                     onClick={handleConnectWallet}
                     className="w-full bg-gradient-to-r from-red-700 to-red-800 hover:from-red-600 hover:to-red-700 text-white font-bold"
@@ -145,13 +174,17 @@ export default function UserDashboard() {
               ) : (
                 <>
                   <div className="p-3 bg-red-900/10 rounded-lg border border-red-900/30">
-                    <p className="text-gray-400 text-xs mb-1">Connected Wallet</p>
-                    <p className="text-white font-mono text-sm">{walletAddress}</p>
+                    <p className="text-gray-400 text-xs mb-1">
+                      Connected Wallet
+                    </p>
+                    <p className="text-white font-mono text-sm">
+                      {walletAddress}
+                    </p>
                   </div>
                   <Button
                     onClick={() => {
-                      setShowWithdrawModal(true)
-                      setShowWalletModal(false)
+                      setShowWithdrawModal(true);
+                      setShowWalletModal(false);
                     }}
                     className="w-full bg-gradient-to-r from-green-700 to-green-800 hover:from-green-600 hover:to-green-700 text-white font-bold"
                   >
@@ -159,8 +192,8 @@ export default function UserDashboard() {
                   </Button>
                   <Button
                     onClick={() => {
-                      setWalletConnected(false)
-                      setShowWalletModal(false)
+                      setWalletConnected(false);
+                      setShowWalletModal(false);
                     }}
                     variant="outline"
                     className="w-full text-red-400 border-red-900/30 hover:bg-red-900/10"
@@ -193,7 +226,9 @@ export default function UserDashboard() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">Amount (USDC)</label>
+                <label className="block text-sm font-medium text-gray-300 mb-2">
+                  Amount (USDC)
+                </label>
                 <input
                   type="number"
                   value={withdrawAmount}
@@ -228,12 +263,16 @@ export default function UserDashboard() {
           <Card className="glass-effect-strong border-red-900/20 hover:border-red-900/40 transition-all depth-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-gray-400 text-sm font-medium">Total Earned</CardTitle>
+                <CardTitle className="text-gray-400 text-sm font-medium">
+                  Total Earned
+                </CardTitle>
                 <TrendingUp className="w-4 h-4 text-green-500" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-4xl font-black text-green-500 mb-1">$1250.5</div>
+              <div className="text-4xl font-black text-green-500 mb-1">
+                $1250.5
+              </div>
               <p className="text-gray-500 text-xs">+12% this month</p>
             </CardContent>
           </Card>
@@ -242,7 +281,9 @@ export default function UserDashboard() {
           <Card className="glass-effect-strong border-red-900/20 hover:border-red-900/40 transition-all depth-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-gray-400 text-sm font-medium">Active</CardTitle>
+                <CardTitle className="text-gray-400 text-sm font-medium">
+                  Active
+                </CardTitle>
                 <div className="w-2 h-2 rounded-full bg-blue-500"></div>
               </div>
             </CardHeader>
@@ -256,7 +297,9 @@ export default function UserDashboard() {
           <Card className="glass-effect-strong border-red-900/20 hover:border-red-900/40 transition-all depth-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-gray-400 text-sm font-medium">Top 10%</CardTitle>
+                <CardTitle className="text-gray-400 text-sm font-medium">
+                  Top 10%
+                </CardTitle>
                 <span className="text-yellow-500">⚡</span>
               </div>
             </CardHeader>
@@ -273,7 +316,9 @@ export default function UserDashboard() {
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-6">
             <span className="text-2xl">🎯</span>
-            <h2 className="text-2xl font-black text-white">Available Bounties</h2>
+            <h2 className="text-2xl font-black text-white">
+              Available Bounties
+            </h2>
           </div>
 
           {/* Search and Filter Bar */}
@@ -320,7 +365,9 @@ export default function UserDashboard() {
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <span className="text-sm font-mono text-gray-400">{bounty.repo}</span>
+                        <span className="text-sm font-mono text-gray-400">
+                          {bounty.repo}
+                        </span>
                         <Badge
                           variant="secondary"
                           className={`glass-effect text-xs font-medium ${
@@ -331,7 +378,8 @@ export default function UserDashboard() {
                                 : "text-red-400 border-red-500/30"
                           }`}
                         >
-                          {bounty.difficulty.charAt(0).toUpperCase() + bounty.difficulty.slice(1)}
+                          {bounty.difficulty.charAt(0).toUpperCase() +
+                            bounty.difficulty.slice(1)}
                         </Badge>
                         <Badge
                           variant="secondary"
@@ -340,8 +388,12 @@ export default function UserDashboard() {
                           {bounty.aiScore}
                         </Badge>
                       </div>
-                      <h3 className="text-lg font-bold text-white mb-2">{bounty.title}</h3>
-                      <p className="text-gray-400 text-sm mb-3">{bounty.description}</p>
+                      <h3 className="text-lg font-bold text-white mb-2">
+                        {bounty.title}
+                      </h3>
+                      <p className="text-gray-400 text-sm mb-3">
+                        {bounty.description}
+                      </p>
                       <div className="flex gap-2">
                         {bounty.tags.map((tag) => (
                           <Badge
@@ -356,7 +408,9 @@ export default function UserDashboard() {
                     </div>
                     <div className="flex flex-col items-end gap-3">
                       <div className="text-right">
-                        <div className="text-3xl font-black text-green-400">{bounty.amount}</div>
+                        <div className="text-3xl font-black text-green-400">
+                          {bounty.amount}
+                        </div>
                         <p className="text-gray-500 text-xs">USDC</p>
                       </div>
                       <Button className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-bold px-6 py-2 rounded-lg text-sm depth-shadow">
@@ -371,5 +425,5 @@ export default function UserDashboard() {
         </div>
       </section>
     </main>
-  )
+  );
 }
