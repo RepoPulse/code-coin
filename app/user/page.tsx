@@ -75,19 +75,27 @@ export default function UserDashboard() {
       return 0
     })
 
-  const handleConnectWallet = () => {
-    setWalletConnected(true)
-    setWalletAddress("0x742d...8f2a")
-    setShowWalletModal(false)
-  }
+    const handleConnectWallet = async () => {
+  try {
+    const albedo = (await import("@albedo-link/intent")).default;
 
-  const handleWithdraw = () => {
-    if (withdrawAmount && Number.parseFloat(withdrawAmount) > 0) {
-      console.log(`Withdrawing ${withdrawAmount} USDC`)
-      setWithdrawAmount("")
-      setShowWithdrawModal(false)
+    const result = await albedo.publicKey({
+      token: "CodeCoin Wallet Connection",
+    });
+
+    if (result && result.pubkey) {
+      setWalletConnected(true);
+      setWalletAddress(result.pubkey);
+      setShowWalletModal(false);
+      console.log("Connected Stellar Address:", result.pubkey);
+    } else {
+      alert("Wallet connection failed or cancelled.");
     }
+  } catch (error) {
+    console.error("Error connecting wallet:", error);
+    alert("Something went wrong while connecting to Albedo.");
   }
+}
 
   return (
     <main className="min-h-screen bg-black text-foreground">
@@ -139,7 +147,7 @@ export default function UserDashboard() {
                     onClick={handleConnectWallet}
                     className="w-full bg-gradient-to-r from-red-700 to-red-800 hover:from-red-600 hover:to-red-700 text-white font-bold"
                   >
-                    Connect Stellar Wallet
+                    Connect with Albedo
                   </Button>
                 </>
               ) : (

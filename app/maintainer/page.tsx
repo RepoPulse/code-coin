@@ -68,27 +68,26 @@ export default function MaintainerDashboard() {
   ]
 
   const handleConnectWallet = async () => {
-    try {
-      // Simulate wallet connection - in production, integrate with actual Stellar wallet SDK
-      const mockWalletAddress =
-        "G" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-      setWalletConnected(true)
-      setWalletAddress(mockWalletAddress)
-      console.log("[v0] Connected wallet:", mockWalletAddress)
-      setShowWalletModal(false)
-    } catch (err) {
-      console.error("[v0] Wallet connection failed:", err)
-      alert("Failed to connect wallet. Please try again.")
-    }
-  }
+  try {
+    const albedo = (await import("@albedo-link/intent")).default;
 
-  const handleWithdraw = () => {
-    if (withdrawAmount && Number.parseFloat(withdrawAmount) > 0) {
-      console.log(`Withdrawing ${withdrawAmount} USDC from ${walletAddress}`)
-      setWithdrawAmount("")
-      setShowWithdrawModal(false)
+    const result = await albedo.publicKey({
+      token: "CodeCoin Wallet Connection",
+    });
+
+    if (result && result.pubkey) {
+      setWalletConnected(true);
+      setWalletAddress(result.pubkey);
+      setShowWalletModal(false);
+      console.log("Connected Stellar Address:", result.pubkey);
+    } else {
+      alert("Wallet connection failed or cancelled.");
     }
+  } catch (error) {
+    console.error("Error connecting wallet:", error);
+    alert("Something went wrong while connecting to Albedo.");
   }
+}
 
   return (
     <main className="min-h-screen bg-black text-foreground">
@@ -140,7 +139,7 @@ export default function MaintainerDashboard() {
                     onClick={handleConnectWallet}
                     className="w-full bg-gradient-to-r from-red-700 to-red-800 hover:from-red-600 hover:to-red-700 text-white font-bold"
                   >
-                    Connect Stellar Wallet
+                    Connect with Albedo
                   </Button>
                 </>
               ) : (
