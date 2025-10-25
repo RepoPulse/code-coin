@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Github,
   Code2,
@@ -9,9 +9,26 @@ import {
   Zap,
 } from "lucide-react";
 import heroPattern from "@/assets/hero-pattern.jpg";
-import { signIn } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
 
 const Index = () => {
+  const { data: session, status } = useSession();
+
+  console.log("Session:", session, status);
+  // Access token:
+  useEffect(() => {
+    if (status === "authenticated") {
+      console.log("GitHub Access Token:", session?.accessToken);
+    }
+    console.log(status);
+  }, [status]);
+  useEffect(() => {
+    console.log(session);
+  }, [status]);
+  if (session?.accessToken) {
+    console.log("GitHub Access Token:", session.accessToken);
+  }
+
   const [loading, setLoading] = useState(false);
   const handleGitHubSignIn = async () => {
     setLoading(true); // Assuming 'setLoading' is from a useState hook
