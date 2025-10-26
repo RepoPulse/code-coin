@@ -53,7 +53,7 @@ export default function MaintainerDashboard() {
   const [issues, setIssues] = useState([
     {
       id: 1,
-      title: "Fix authentication bug",
+      title: "Optimize image loading performance",
       repoName: "awesome-project",
       issueNumber: 142,
       bountyAmount: 500,
@@ -61,7 +61,7 @@ export default function MaintainerDashboard() {
     },
     {
       id: 2,
-      title: "Optimize database queries",
+      title: "Fix memory leak in useEffect cleanup",
       repoName: "next-gen-app",
       issueNumber: 89,
       bountyAmount: 750,
