@@ -11,6 +11,7 @@ const nextConfig = {
     // This resolves the "Cross origin request detected" warning.
     allowedDevOrigins: [
       "https://unloyal-grayce-nonnecessitously.ngrok-free.dev",
+      "http://localhost:8000"
       // "http://unloyal-grayce-nonnecessitously.ngrok-free.dev",
       // Include any other development domains if necessary
     ],
