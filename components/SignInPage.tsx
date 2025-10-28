@@ -21,7 +21,7 @@ const Index = () => {
       console.log("GitHub Access Token:", session?.accessToken);
       console.log("User ID:", session.user.id);
       const installUrl =
-        "https://github.com/apps/reviewprfortesting/installations/new";
+        "https://github.com/apps/reviewprfortesting/installations/new?target=https%3A%2F%2Funloyal-grayce-nonnecessitously.ngrok-free.dev%2Frole-selector";
       window.location.href = installUrl;
     }
   }, [status, session]);

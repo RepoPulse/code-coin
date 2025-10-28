@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Settings, Plus, Users, Wallet, LogOut, AlertCircle, User } from "lucide-react"
+import * as StellarSdk from "@stellar/stellar-sdk"
 
 export default function MaintainerDashboard() {
   const [showAddRepoModal, setShowAddRepoModal] = useState(false)
@@ -15,6 +16,7 @@ export default function MaintainerDashboard() {
   const [showProfileModal, setShowProfileModal] = useState(false)
   const [withdrawAmount, setWithdrawAmount] = useState("")
   const [depositAmount, setDepositAmount] = useState("")
+  const [walletAmount, setWalletAmount] = useState("0")
   const [walletConnected, setWalletConnected] = useState(false)
   const [walletAddress, setWalletAddress] = useState("")
   const [newRepo, setNewRepo] = useState({ name: "", description: "", language: "" })
@@ -53,7 +55,7 @@ export default function MaintainerDashboard() {
   const [issues, setIssues] = useState([
     {
       id: 1,
-      title: "Optimize image loading performance",
+      title: "Fix authentication bug",
       repoName: "awesome-project",
       issueNumber: 142,
       bountyAmount: 500,
@@ -61,7 +63,7 @@ export default function MaintainerDashboard() {
     },
     {
       id: 2,
-      title: "Fix memory leak in useEffect cleanup",
+      title: "Optimize database queries",
       repoName: "next-gen-app",
       issueNumber: 89,
       bountyAmount: 750,
@@ -119,7 +121,69 @@ export default function MaintainerDashboard() {
       alert("Something went wrong while connecting to Albedo.")
     }
   }
+const handleDeposit = async () => {
+    if (!depositAmount || !walletConnected) {
+      alert("Please connect wallet and enter amount")
+      return
+    }
 
+    try {
+      // Contract configuration
+      const contractId = "CC457P2NWSB3BES7LBZXTVFHNULMNFNVT76O5AVQLLRKR22M5FQOJV7T"
+      const rpcUrl = "https://soroban-testnet.stellar.org"
+      const networkPassphrase = StellarSdk.Networks.TESTNET
+
+      // Convert amount to stroops (1 XLM = 10,000,000 stroops)
+      const amountInStroops = Math.floor(parseFloat(depositAmount) * 10_000_000)
+
+      // Initialize contract
+      const server = new StellarSdk.rpc.Server(rpcUrl)
+      const contract = new StellarSdk.Contract(contractId)
+
+      // Get source account
+      const sourceAccount = await server.getAccount(walletAddress)
+
+      // Build transaction to call fund_pool
+      const transaction = new StellarSdk.TransactionBuilder(sourceAccount, {
+        fee: StellarSdk.BASE_FEE,
+        networkPassphrase,
+      })
+        .addOperation(
+          contract.call(
+            "fund_pool",
+            StellarSdk.Address.fromString(walletAddress).toScVal(), // from
+            StellarSdk.nativeToScVal(amountInStroops, { type: "i128" }) // amount
+          )
+        )
+        .setTimeout(30)
+        .build()
+
+      // Prepare transaction
+      const preparedTransaction = await server.prepareTransaction(transaction)
+
+      // Sign with Albedo
+      const albedo = (await import("@albedo-link/intent")).default
+      const signResult = await albedo.tx({
+        xdr: preparedTransaction.toXDR(),
+        network: "testnet",
+        submit: true,
+      })
+              setWalletAmount(Math.floor(parseFloat(walletAmount) + parseFloat(depositAmount)).toString())
+
+
+      if (signResult && signResult.signed_envelope_xdr) {
+        console.log("Deposit successful!")
+        console.log("Transaction hash:", signResult.tx_hash)
+        alert(`Deposit successful! Amount: ${depositAmount} XLM\nTx: ${signResult.tx_hash}`)
+        setWalletAmount(Math.floor(parseFloat(walletAmount) + parseFloat(depositAmount)).toString())
+        setDepositAmount("")
+        setShowDepositModal(false)
+      }
+    } catch (error) {
+      console.error("Deposit error:", error)
+      alert("Deposit failed: " + error?.message as any)
+    }
+  }
   const handleAddIssue = () => {
     if (newIssue.title && newIssue.repoName && newIssue.issueNumber && newIssue.bountyAmount) {
       const issue = {
@@ -144,13 +208,7 @@ export default function MaintainerDashboard() {
     }
   }
 
-  const handleDeposit = () => {
-    if (depositAmount) {
-      console.log("Depositing:", depositAmount, "USDC")
-      setDepositAmount("")
-      setShowDepositModal(false)
-    }
-  }
+
 
   return (
     <main className="min-h-screen bg-black text-foreground">
@@ -168,8 +226,8 @@ export default function MaintainerDashboard() {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 text-green-500 text-sm font-medium">
-                <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                5000 USDC
+                <div className=""></div>
+               
               </div>
               <Button
                 onClick={() => setShowDepositModal(true)}
@@ -372,7 +430,7 @@ export default function MaintainerDashboard() {
                   className="w-full px-4 py-2 bg-black border border-red-900/30 rounded-lg text-white placeholder-gray-600 focus:outline-none focus:border-red-700"
                 />
               </div>
-              <p className="text-gray-400 text-xs">Available: 5000 USDC</p>
+              <p className="text-gray-400 text-xs">Available: {walletAmount}</p>
               <Button
                 onClick={handleWithdraw}
                 className="w-full bg-gradient-to-r from-green-700 to-green-800 hover:from-green-600 hover:to-green-700 text-white font-bold"
@@ -403,7 +461,7 @@ export default function MaintainerDashboard() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-4xl font-black text-green-500 mb-1">$5000</div>
+              <div className="text-4xl font-black text-green-500 mb-1">${walletAmount}</div>
               <p className="text-gray-500 text-xs">Available Balance</p>
             </CardContent>
           </Card>

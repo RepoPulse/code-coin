@@ -17,5 +17,5 @@ export default function ProfilePage() {
   const handleContinue = () => {
     console.log("continued as something");
   };
-  return <RoleSelector onRoleSelect={handleRoleSelect} />;
+  return <RoleSelector />;
 }
